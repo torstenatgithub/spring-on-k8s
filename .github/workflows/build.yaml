@@ -2,8 +2,8 @@ name: Java CI
 
 on:
   push:
-    paths-ignore:
-      - '.github/workflows/**'
+#    paths-ignore:
+#      - '.github/workflows/**'
     tags:
       - 'v*'
   pull_request:
@@ -46,10 +46,16 @@ jobs:
       - name: Build Docker Image
         run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=${{ env.IMAGE_NAME }}:${{ github.sha }}
       
-      - name: Push Docker Images
+      - name: Push Docker Image
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.GITHUB_REF_NAME }}
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.GITHUB_REF_NAME }}
+
+      - name: Push Latest Tag
+        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
+        run: |
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
