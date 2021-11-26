@@ -1,6 +1,19 @@
 name: Java CI
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - '.github/workflows/**'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'master'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -9,13 +22,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
           cache: maven
+
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots clean compile
+        run: mvn --batch-mode --update-snapshots -DskipTests clean package
+
       - name: Run Unittests
         run: mvn --batch-mode --update-snapshots verify
+      
+      - name: Build Docker Image
+        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=${{ env.IMAGE_NAME }}:${{ github.sha }}
+      
+      - name: Push Docker Images
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
