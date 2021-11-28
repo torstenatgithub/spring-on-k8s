@@ -30,6 +30,25 @@ jobs:
           distribution: 'adopt'
           cache: maven
 
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      
+      - name: Display Docker Metadata Outputs
+        run: |
+          echo version:
+          echo ${{ steps.meta.outputs.version }}
+          echo tags:
+          echo ${{ steps.meta.outputs.tags }}
+          echo labels:
+          echo ${{ steps.meta.outputs.labels }}
+          echo json:
+          echo ${{ steps.meta.outputs.json }}
+          echo bake-file:
+          echo ${{ steps.meta.outputs.bake-file }}
+
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots -DskipTests clean package
 
