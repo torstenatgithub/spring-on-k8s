@@ -43,7 +43,7 @@ jobs:
           echo tags:
           echo ${{ steps.meta.outputs.tags }}
           echo labels:
-          echo ${{ steps.meta.outputs.labels }}
+          for l in ${{ steps.meta.outputs.labels }}; do echo l; done
           echo json:
           echo ${{ steps.meta.outputs.json }}
           echo bake-file:
