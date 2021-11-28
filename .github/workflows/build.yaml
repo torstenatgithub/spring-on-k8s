@@ -43,7 +43,9 @@ jobs:
           echo tags:
           echo ${{ steps.meta.outputs.tags }}
           echo labels:
-          for l in "${{ steps.meta.outputs.labels }}"; do echo l; done
+          while IFS= read -r line; do
+            echo "$line"
+          done <<< "$list"
           echo json:
           echo ${{ steps.meta.outputs.json }}
           echo bake-file:
