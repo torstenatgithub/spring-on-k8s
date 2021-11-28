@@ -41,7 +41,9 @@ jobs:
           echo version:
           echo ${{ steps.meta.outputs.version }}
           echo tags:
-          echo ${{ steps.meta.outputs.tags }}
+          while IFS= read -r tag; do
+            echo "$tag"
+          done <<< "${{ steps.meta.outputs.tags }}"
           echo labels:
           while IFS= read -r label; do
             echo "$label"
