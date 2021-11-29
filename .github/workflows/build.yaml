@@ -2,6 +2,11 @@ name: Java CI
 
 on:
   push:
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+  release:
+    types: [ created ]
   workflow_dispatch:
 
 env:
@@ -30,6 +35,29 @@ jobs:
           distribution: 'adopt'
           cache: maven
 
+      - name: Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      
+      - name: Display Docker Metadata Outputs
+        run: |
+          echo version:
+          echo ${{ steps.meta.outputs.version }}
+          echo tags:
+          while IFS= read -r tag; do
+            echo "$tag"
+          done <<< "${{ steps.meta.outputs.tags }}"
+          echo labels:
+          while IFS= read -r label; do
+            echo "$label"
+          done <<< "${{ steps.meta.outputs.labels }}"
+          echo json:
+          echo ${{ steps.meta.outputs.json }}
+          echo bake-file:
+          echo ${{ steps.meta.outputs.bake-file }}
+
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots -DskipTests clean package
 
@@ -39,14 +67,10 @@ jobs:
       - name: Build Docker Image
         run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=${{ env.IMAGE_NAME }}:${{ github.sha }}
       
-      - name: Push Docker Image
+      - name: Tag and Push Docker Image
         if: ${{ github.event_name != 'pull_request' }}
         run: |
-          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-
-      - name: Push Latest Tag
-        if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/master' }}
-        run: |
-          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          while IFS= read -r tag; do
+            docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} $tag
+            docker push $tag
+          done <<< "${{ steps.meta.outputs.tags }}"
