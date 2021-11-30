@@ -23,4 +23,4 @@ jobs:
         run: |
           name=${REF//[\/]/-}
           echo "Deleting Docker image for ${{ github.event.ref_type }} ${name}"
-          docker rmi ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$name
+          docker rmi ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$name || true
