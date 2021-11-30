@@ -26,4 +26,4 @@ jobs:
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed("Branch name ${{ steps.validate_branch.outputs.branch_name }} is invalid. Feature branches must start with 'feature/'. Please delete the branch and create a new one.")
+            core.setFailed("Branch name '${{ steps.validate_branch.outputs.branch_name }}' is invalid. Feature branches must start with 'feature/'. Please delete the branch and create a new one.")
