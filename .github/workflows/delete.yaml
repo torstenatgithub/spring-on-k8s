@@ -5,6 +5,7 @@ on: [delete]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  REF: ${{ github.event.ref }}
 
 jobs:
   delete:
@@ -20,5 +21,6 @@ jobs:
 
       - name: Delete Docker Image for Branch or Tag
         run: |
-          echo "Deleting Docker image for ${{ github.event.ref_type }} ${{ github.event.ref }}"
-          docker rmi ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.ref }}
+          name=${REF//[\/]/-}
+          echo "Deleting Docker image for ${{ github.event.ref_type }} ${name}"
+          docker rmi ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$name
