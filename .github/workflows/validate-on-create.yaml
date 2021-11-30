@@ -15,16 +15,11 @@ jobs:
           name=${ref#refs/heads/}
           if [[ $name == feature/* ]] ;
           then
-            echo "::set-output name=isvalid::true\n"
+            echo "::set-output name=isvalid::true"
           else
-            echo "::set-output name=isvalid::false\n"
+            echo "::set-output name=isvalid::false"
           fi
 
-      - name: Debug
-        run: |
-          echo "${{ steps.validate_branch.outputs.isvalid }}"
-          echo "${{ steps.validate_branch.outputs.* }}"
-      
       - name: Invalid Branch name
         if: ${{ steps.validate_branch.outputs.isvalid == 'false' }}
         uses: actions/github-script@v3
