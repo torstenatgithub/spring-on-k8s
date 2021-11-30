@@ -1,0 +1,24 @@
+name: Delete
+
+on: [delete]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete Docker Image for Branch or Tag
+        run: |
+          echo "Deleting Docker image for ${{ github.event.ref_type }} ${{ github.event.ref }}"
+          docker rmi ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.event.ref }}
