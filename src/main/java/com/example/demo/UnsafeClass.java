@@ -8,5 +8,8 @@ public class UnsafeClass {
     public static Object deserialize(InputStream is) throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(is);
         return ois.readObject();
-    }    
+    } 
+    
+    public static void justAnotherUselessMethod() {
+    }
 }
