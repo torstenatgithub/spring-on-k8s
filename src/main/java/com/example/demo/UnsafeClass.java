@@ -11,5 +11,6 @@ public class UnsafeClass {
     } 
     
     public static void justAnotherUselessMethod() {
+        return;
     }
 }
