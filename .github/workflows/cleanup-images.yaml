@@ -1,0 +1,51 @@
+name: Cleanup Images
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Remove untagged images
+        uses: actions/github-script@v5
+        with:
+          script: |
+            // let image = "${{ github.repository }}";
+            let image = "spring-on-k8s";
+
+            let findUntaggedPackageVersions = async function* (name) {
+              for await (const response of github.paginate.iterator(
+                github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser,
+                {
+                  package_type: "container",
+                  package_name: name,
+                  state: "active",
+                  per_page: 100
+                }
+              )) {
+                for (let packageVersion of response.data) {
+                  if (packageVersion.metadata.container.tags.length == 0) {
+                    yield packageVersion;
+                  }
+                }
+              }
+            };
+
+            let deletePackageVersion = async (name, versionId) => {
+              await github.rest.packages.deletePackageVersionForAuthenticatedUser({
+                package_type: "container",
+                package_name: name,
+                package_version_id: versionId
+              });
+            };
+
+            for await (const pkgVer of findUntaggedPackageVersions(image)) {
+              await deletePackageVersion(
+                image,
+                pkgVer.id
+              );
+            }
