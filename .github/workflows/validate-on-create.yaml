@@ -7,21 +7,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Validate Branch
+      - name: Validate Branch Name
         id: validate_branch
         if: ${{ github.ref_type == 'branch' }}
         run: |
           ref=${{ github.ref }}
           name=${ref#refs/heads/}
           echo "::set-output name=branch_name::$name"
-          if [[ $name == feature/* ]] ;
+          if [[ $name == feature/* || $name == dependabot/* ]] ;
           then
             echo "::set-output name=isvalid::true"
           else
             echo "::set-output name=isvalid::false"
           fi
 
-      - name: Invalid Branch name
+      - name: Invalid Branch Name
         if: ${{ steps.validate_branch.outputs.isvalid == 'false' }}
         uses: actions/github-script@v3
         with:
