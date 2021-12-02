@@ -15,37 +15,41 @@ jobs:
         with:
           script: |
             // let image = "${{ github.repository }}";
-            let image = "spring-on-k8s";
+            let imageName = "spring-on-k8s";
 
-            let findUntaggedPackageVersions = async function* (name) {
+            let findUntaggedPackageVersions = async function* (packageName) {
               for await (const response of github.paginate.iterator(
                 github.rest.packages.getAllPackageVersionsForPackageOwnedByAuthenticatedUser,
                 {
                   package_type: "container",
-                  package_name: name,
+                  package_name: packageName,
                   state: "active",
                   per_page: 100
                 }
               )) {
                 for (let packageVersion of response.data) {
+                  let tags = packageVersion.metadata.container.tags;
                   if (packageVersion.metadata.container.tags.length == 0) {
+                    core.info(`Package version #${packageVersion.id} with name ${packageVersion.name} is untagged`);
                     yield packageVersion;
+                  } else {
+                    core.info(`Package version #${packageVersion.id} with name ${packageVersion.name} has tags: ${Array.from(tags).join(", ")}`);
                   }
                 }
               }
             };
 
-            let deletePackageVersion = async (name, versionId) => {
+            let deletePackageVersion = async (packageName, versionId) => {
               await github.rest.packages.deletePackageVersionForAuthenticatedUser({
                 package_type: "container",
-                package_name: name,
+                package_name: packageName,
                 package_version_id: versionId
               });
             };
 
-            for await (const pkgVer of findUntaggedPackageVersions(image)) {
+            for await (const pkgVer of findUntaggedPackageVersions(imageName)) {
               await deletePackageVersion(
-                image,
+                imageName,
                 pkgVer.id
               );
             }
