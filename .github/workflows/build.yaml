@@ -54,7 +54,7 @@ jobs:
         run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Setup Buildpacks
-        uses: buildpacks/github-actions/setup-pack@v4
+        uses: buildpacks/github-actions/setup-pack@v4.1.0
 
       - name: Build Docker Image
         run: |
