@@ -51,7 +51,7 @@ jobs:
         run: mvn --batch-mode --update-snapshots verify
       
       - name: Setup Buildpacks
-        uses: buildpacks/github-actions/setup-pack@v4.8.0
+        uses: buildpacks/github-actions/setup-pack@v5.0.0
 
       - name: Build Docker Image
         run: |
